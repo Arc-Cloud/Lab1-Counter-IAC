@@ -1,4 +1,4 @@
-#include "Vcounter.h"
+#include "Vtop.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include "vbuddy.cpp"
@@ -12,7 +12,7 @@ int main(int argc, char **argv, char**env){
     
 Verilated::commandArgs(argc, argv);
 // init top verilog instance
-Vcounter* top = new Vcounter;
+Vtop* top = new Vtop;
 // init trace dump
 Verilated::traceEverOn(true);
 VerilatedVcdC* tfp = new VerilatedVcdC;
@@ -26,6 +26,7 @@ vbdHeader("Lab 1: Counter");
 // initialise simulation inputs
 top->clk = 1;
 top->rst = 1;
+top->en = 1;
 top->v = 0;
 vbdSetMode(1);
 
@@ -41,39 +42,14 @@ for (i=0; i<1000; i++) {
 
     // ++++ send count value to Vbuddy
     //
-    vbdHex(4, (int(top->count) >> 16) & 0xF);
-    vbdHex(3, (int(top->count) >> 8) & 0xF);
-    vbdHex(2, (int(top->count) >> 4) & 0xF);
-    vbdHex(1, int(top->count) & 0xF);
+    vbdHex(3, (int(top->bcd) >> 8) & 0xF);  // Hundreds place
+    vbdHex(2, (int(top->bcd) >> 4) & 0xF);  // Tens place
+    vbdHex(1, int(top->bcd) & 0xF);         // Units place
+
     vbdCycle(i+1);
     //
     // ---- end of Vbuddy output section
-
-   
-
-/* Step 1
-
-    top->rst = (i<2);
-
-    if(vbdFlag()){
-        top->v = vbdValue();
-        top->ld = 1;
-    }
-    else{
-        top->ld = 0;
-    }
-*/
-
-    // Step 2
-
-    if(vbdFlag()){
-        top->rst = 0;  
-        top->inc = 1; 
-    }
-    else{
-        top->inc = 0;
-    }
-
+    top->rst = 0;
 
 
     // change input stimuli
